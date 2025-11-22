@@ -1,0 +1,11 @@
+@if (!isHomePage) {
+<app-header></app-header>
+}
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+@if (!isHomePage) {
+<app-footer></app-footer>
+}
