@@ -26,7 +26,7 @@
         font-size: 5rem;
         line-height: 1;
         margin-bottom: 1rem;
-        background: linear-gradient(45deg, #fff, var(--text-secondary));
+        background: linear-gradient(45deg, var(--text-gradient-start), var(--text-secondary));
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -41,7 +41,7 @@
 
     &__description {
         font-size: 1.1rem;
-        color: #8892b0;
+        color: var(--text-muted);
         max-width: 500px;
         margin-bottom: 2.5rem;
     }
@@ -72,7 +72,7 @@
 .orbit {
     width: 300px;
     height: 300px;
-    border: 1px solid rgba(102, 252, 241, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 50%;
     position: relative;
     animation: rotate 20s linear infinite;
@@ -85,7 +85,7 @@
         transform: translate(-50%, -50%);
         width: 200px;
         height: 200px;
-        border: 1px solid rgba(102, 252, 241, 0.2);
+        border: 1px solid var(--border-color);
         border-radius: 50%;
     }
 }
@@ -99,7 +99,7 @@
     background: var(--text-secondary);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 30px rgba(69, 162, 158, 0.4);
+    box-shadow: 0 0 30px var(--glow-secondary);
 }
 
 .satellite {
@@ -111,7 +111,7 @@
     background: var(--text-highlight);
     border-radius: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 20px rgba(102, 252, 241, 0.6);
+    box-shadow: 0 0 20px var(--glow-primary);
 }
 
 @keyframes rotate {

@@ -1,0 +1,32 @@
+// App Component Styles
+// Global variables are defined in src/styles.scss
+
+// Header/Footer specific styles that might need access to component scope
+// or just general layout tweaks for the app root.
+
+.header {
+    background-color: var(--bg-color); // Use main bg with opacity?
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+
+    // Override for transparency if needed
+    background-color: rgba(var(--bg-color-rgb), 0.8);
+    // Note: --bg-color is hex, so rgba won't work directly without RGB vars.
+    // For now, let's just use the variable.
+    background-color: var(--surface-color);
+    opacity: 0.95;
+}
+
+.footer {
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+}
+
+.nav__link {
+    color: var(--text-primary);
+
+    &:hover {
+        background-color: var(--border-color);
+        color: var(--text-highlight);
+    }
+}

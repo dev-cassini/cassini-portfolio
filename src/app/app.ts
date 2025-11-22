@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
+import { ThemeToggle } from './components/theme-toggle/theme-toggle';
 import { filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 
@@ -11,7 +12,8 @@ import { AsyncPipe } from '@angular/common';
   imports: [
     RouterOutlet,
     Header,
-    Footer
+    Footer,
+    ThemeToggle
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
