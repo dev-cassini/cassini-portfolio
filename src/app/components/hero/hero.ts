@@ -189,6 +189,25 @@ export class Hero implements AfterViewInit, OnDestroy {
           this.mouse.x = -1000;
           this.mouse.y = -1000;
         }
+
+        // Interaction Raycasting
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.cubes);
+
+        // Clear previous hover
+        if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
+          this.hoveredCube.userData['isHovered'] = false;
+        }
+
+        // Set new hover
+        if (intersects.length > 0) {
+          this.hoveredCube = intersects[0].object as THREE.Mesh;
+          if (!this.hoveredCube.userData['isCollapsing']) {
+            this.hoveredCube.userData['isHovered'] = true;
+          }
+        } else {
+          this.hoveredCube = null;
+        }
       };
 
       window.addEventListener('mousemove', handleMouseMove);
@@ -226,25 +245,6 @@ export class Hero implements AfterViewInit, OnDestroy {
     this.animationId = requestAnimationFrame(() => this.animate());
 
     this.time += 0.02;
-
-    // Interaction Raycasting
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(this.cubes);
-
-    // Clear previous hover
-    if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
-      this.hoveredCube.userData['isHovered'] = false;
-    }
-
-    // Set new hover
-    if (intersects.length > 0) {
-      this.hoveredCube = intersects[0].object as THREE.Mesh;
-      if (!this.hoveredCube.userData['isCollapsing']) {
-        this.hoveredCube.userData['isHovered'] = true;
-      }
-    } else {
-      this.hoveredCube = null;
-    }
 
     const colors = (this as any).currentColors || {
       wireframe: 0xffffff,
@@ -386,7 +386,8 @@ export class Hero implements AfterViewInit, OnDestroy {
       }
 
       // Normal highlighting (either from cycle or hover)
-      if (cube.userData['isHovered'] && !cube.userData['isCollapsing']) {
+      const isHoveredCube = cube.id === this.hoveredCube?.parent?.id;
+      if (isHoveredCube && !cube.userData['isCollapsing']) {
         (cube.material as THREE.MeshBasicMaterial).opacity = 1;
         (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.fillHover);
         (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframeHover);
