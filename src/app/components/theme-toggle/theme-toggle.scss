@@ -6,10 +6,15 @@
   padding: 0.5rem;
   width: 2.5rem;
   height: 2.5rem;
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
   z-index: 1000;
+  cursor: pointer;
+
+  &.fixed-position {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+  }
+
   cursor: pointer;
   background-color: transparent;
   border: none;

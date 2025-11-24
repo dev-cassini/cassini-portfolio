@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../services/theme.service';
 
@@ -10,9 +10,11 @@ import { ThemeService } from '../../services/theme.service';
     styleUrl: './theme-toggle.scss'
 })
 export class ThemeToggle {
-    themeService = inject(ThemeService);
+    @Input() isFixed = true;
+    private themeService = inject(ThemeService);
+    theme = this.themeService.theme;
 
-    toggleTheme() {
+    toggle() {
         this.themeService.toggle();
     }
 }

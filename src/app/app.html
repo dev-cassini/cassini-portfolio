@@ -1,7 +1,9 @@
 @if (!isHomePage) {
 <app-header></app-header>
 }
-<app-theme-toggle></app-theme-toggle>
+@if (isHomePage) {
+<app-theme-toggle [isFixed]="true"></app-theme-toggle>
+}
 
 <main>
   <router-outlet></router-outlet>
