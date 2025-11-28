@@ -2,11 +2,12 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, effect, inj
 import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import * as THREE from 'three';
+import { LogoComponent } from '../logo/logo.component';
 
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LogoComponent],
   templateUrl: './hero.html',
   styleUrl: './hero.scss',
 })

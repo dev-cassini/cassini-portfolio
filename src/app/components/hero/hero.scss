@@ -27,14 +27,28 @@
         font-family: var(--font-mono);
     }
 
+    &__title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+
+        app-logo {
+            width: 60px;
+            height: 60px;
+            display: block;
+        }
+    }
+
     &__name {
-        font-size: 5rem;
-        line-height: 1;
-        margin-bottom: 1rem;
-        background: linear-gradient(45deg, var(--text-gradient-start), var(--text-secondary));
-        background-clip: text;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 0;
+        background: linear-gradient(135deg, var(--text-highlight), var(--text-secondary));
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
+        letter-spacing: -2px;
     }
 
     &__subtitle {
