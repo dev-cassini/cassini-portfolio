@@ -193,7 +193,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         // Interaction Raycasting
         this.raycaster.setFromCamera(this.mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.cubes);
+        const intersects = this.raycaster.intersectObjects(this.cubes, false);
 
         // Clear previous hover
         if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
@@ -387,7 +387,7 @@ export class Hero implements AfterViewInit, OnDestroy {
       }
 
       // Normal highlighting (either from cycle or hover)
-      const isHoveredCube = cube.id === this.hoveredCube?.parent?.id;
+      const isHoveredCube = cube.id === this.hoveredCube?.id;
       if (isHoveredCube && !cube.userData['isCollapsing']) {
         (cube.material as THREE.MeshBasicMaterial).opacity = 1;
         (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.fillHover);
