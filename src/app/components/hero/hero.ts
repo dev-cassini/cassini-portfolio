@@ -26,6 +26,7 @@ export class Hero implements AfterViewInit, OnDestroy {
   private hoveredCube: THREE.Mesh | null = null;
   private animationId: number | null = null;
   private time = 0;
+  private highlightCycleTime = 0;
 
   // Cleanup function for resize listener
   private removeResizeListener?: () => void;
@@ -198,6 +199,7 @@ export class Hero implements AfterViewInit, OnDestroy {
         // Clear previous hover
         if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
           this.hoveredCube.userData['isHovered'] = false;
+          this.highlightCycleTime = Math.random() * 3;
         }
 
         // Set new hover
@@ -246,6 +248,7 @@ export class Hero implements AfterViewInit, OnDestroy {
     this.animationId = requestAnimationFrame(() => this.animate());
 
     this.time += 0.02;
+    this.highlightCycleTime += 0.02;
 
     const colors = (this as any).currentColors || {
       wireframe: 0xffffff,
@@ -309,7 +312,7 @@ export class Hero implements AfterViewInit, OnDestroy {
       }
 
       // Random highlight effect
-      const highlightCycle = (this.time + highlightTime) % 18;
+      const highlightCycle = (this.highlightCycleTime + highlightTime) % 18;
       const isHighlighted = !this.hoveredCube && highlightCycle < 0.5;
 
       // Handle collapsing animation
