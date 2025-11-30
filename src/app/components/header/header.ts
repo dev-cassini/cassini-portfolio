@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Router } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { ThemeToggle } from '../theme-toggle/theme-toggle';
 import { LogoComponent } from '../logo/logo.component';
 

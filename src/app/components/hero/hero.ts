@@ -310,7 +310,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Random highlight effect
       const highlightCycle = (this.time + highlightTime) % 18;
-      const isHighlighted = highlightCycle < 0.5;
+      const isHighlighted = !this.hoveredCube && highlightCycle < 0.5;
 
       // Handle collapsing animation
       if (cube.userData['isCollapsing']) {
