@@ -194,6 +194,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         // Check if mouse is actually inside the canvas rect
         if (
+          window.innerWidth > 768 && // Disable interaction on mobile
           event.clientX >= rect.left &&
           event.clientX <= rect.right &&
           event.clientY >= rect.top &&
@@ -232,6 +233,8 @@ export class Hero implements AfterViewInit, OnDestroy {
       this.removeMouseMoveListener = () => window.removeEventListener('mousemove', handleMouseMove);
 
       const handleClick = () => {
+        if (window.innerWidth <= 768) return; // Disable interaction on mobile
+
         if (this.hoveredCube && !this.isScattered) {
           this.isScattered = true;
 

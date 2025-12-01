@@ -126,6 +126,7 @@
             left: 0;
             opacity: 0.3; // Fade out visual on mobile to make text readable
             z-index: 0;
+            pointer-events: none; // Disable interaction with the canvas on mobile
         }
     }
 }
