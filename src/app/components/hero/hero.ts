@@ -28,6 +28,9 @@ export class Hero implements AfterViewInit, OnDestroy {
   private time = 0;
   private highlightCycleTime = 0;
 
+  private isScattered = false;
+  private removeClickListener?: () => void;
+
   // Cleanup function for resize listener
   private removeResizeListener?: () => void;
   private removeMouseMoveListener?: () => void;
@@ -57,6 +60,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
     if (this.removeResizeListener) this.removeResizeListener();
     if (this.removeMouseMoveListener) this.removeMouseMoveListener();
+    if (this.removeClickListener) this.removeClickListener();
 
     // Dispose Three.js resources
     if (this.renderer) {
@@ -140,13 +144,24 @@ export class Hero implements AfterViewInit, OnDestroy {
         const offsetX = (gridSize - 1) * spacing / 2;
         const offsetZ = (gridSize - 1) * spacing / 2;
 
-        cube.position.x = x * spacing - offsetX;
-        cube.position.z = z * spacing - offsetZ;
+        const originalX = x * spacing - offsetX;
+        const originalZ = z * spacing - offsetZ;
+
+        cube.position.x = originalX;
+        cube.position.z = originalZ;
         cube.position.y = 0;
 
         cube.userData = {
           x,
           z,
+          originalX,
+          originalZ,
+          targetX: 0,
+          targetY: 0,
+          targetZ: 0,
+          scatterRotationX: 0,
+          scatterRotationY: 0,
+          scatterRotationZ: 0,
           baseY: 0,
           highlightTime: (x * 2 + z * 3) * 0.5,
           isCollapsing: false,
@@ -215,6 +230,29 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       window.addEventListener('mousemove', handleMouseMove);
       this.removeMouseMoveListener = () => window.removeEventListener('mousemove', handleMouseMove);
+
+      const handleClick = () => {
+        if (this.hoveredCube && !this.isScattered) {
+          this.isScattered = true;
+
+          // Calculate random scatter targets
+          this.cubes.forEach(cube => {
+            cube.userData['targetX'] = (Math.random() - 0.5) * 20;
+            cube.userData['targetY'] = (Math.random() - 0.5) * 20;
+            cube.userData['targetZ'] = (Math.random() - 0.5) * 20;
+            cube.userData['scatterRotationX'] = Math.random() * Math.PI * 2;
+            cube.userData['scatterRotationY'] = Math.random() * Math.PI * 2;
+            cube.userData['scatterRotationZ'] = Math.random() * Math.PI * 2;
+          });
+
+          setTimeout(() => {
+            this.isScattered = false;
+          }, 2300);
+        }
+      };
+
+      window.addEventListener('click', handleClick);
+      this.removeClickListener = () => window.removeEventListener('click', handleClick);
     });
   }
 
@@ -260,6 +298,29 @@ export class Hero implements AfterViewInit, OnDestroy {
 
     this.cubes.forEach((cube) => {
       const { x, z, highlightTime, wireframe } = cube.userData;
+
+      // Handle scatter animation
+      if (this.isScattered) {
+        cube.position.x += (cube.userData['targetX'] - cube.position.x) * 0.05;
+        cube.position.y += (cube.userData['targetY'] - cube.position.y) * 0.05;
+        cube.position.z += (cube.userData['targetZ'] - cube.position.z) * 0.05;
+
+        cube.rotation.x += (cube.userData['scatterRotationX'] - cube.rotation.x) * 0.05;
+        cube.rotation.y += (cube.userData['scatterRotationY'] - cube.rotation.y) * 0.05;
+        cube.rotation.z += (cube.userData['scatterRotationZ'] - cube.rotation.z) * 0.05;
+
+        (cube.material as THREE.MeshBasicMaterial).opacity = 0.8;
+        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.highlightFill);
+        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+        return;
+      } else {
+        // Returning from scatter
+        cube.position.x += (cube.userData['originalX'] - cube.position.x) * 0.05;
+        cube.position.z += (cube.userData['originalZ'] - cube.position.z) * 0.05;
+        cube.rotation.x += (0 - cube.rotation.x) * 0.05;
+        cube.rotation.y += (0 - cube.rotation.y) * 0.05;
+        cube.rotation.z += (0 - cube.rotation.z) * 0.05;
+      }
 
       // Handle initial spawn animation
       if (!cube.userData['hasSpawned']) {
@@ -381,7 +442,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Normal wave animation
       cube.scale.y = targetScale;
-      cube.position.y = 0;
+      cube.position.y += (0 - cube.position.y) * 0.05;
 
       // Check for highlight trigger
       if (isHighlighted && highlightCycle > 0.3 && highlightCycle < 0.35) {
