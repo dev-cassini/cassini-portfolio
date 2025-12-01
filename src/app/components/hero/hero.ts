@@ -108,6 +108,7 @@ export class Hero implements AfterViewInit, OnDestroy {
     this.updateThemeColors(this.themeService.theme());
 
     // Resize Handler
+    // Resize Handler
     const handleResize = () => {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
@@ -115,10 +116,25 @@ export class Hero implements AfterViewInit, OnDestroy {
       this.camera.aspect = newWidth / newHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(newWidth, newHeight);
+
+      // Adjust view offset to keep animation right-aligned on desktop
+      if (newWidth > 768) {
+        // We want the center (0,0) to be at 75% of the screen width (center of right half)
+        // Default center is 50%. We need to shift the view.
+        // setViewOffset(fullWidth, fullHeight, x, y, width, height)
+        // x is the offset of the sub-camera.
+        // To shift the scene to the right, we need to shift the camera window to the left.
+        this.camera.setViewOffset(newWidth, newHeight, -newWidth * 0.25, 0, newWidth, newHeight);
+      } else {
+        this.camera.clearViewOffset();
+      }
     };
 
     window.addEventListener('resize', handleResize);
     this.removeResizeListener = () => window.removeEventListener('resize', handleResize);
+
+    // Initial call to set correct offset
+    handleResize();
   }
 
   private createCubes() {
