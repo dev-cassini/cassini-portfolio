@@ -56,7 +56,7 @@
 
 .project-title {
     font-size: 1.4rem;
-    color: #fff;
+    color: var(--text-gradient-start);
     margin-bottom: 0.8rem;
 }
 
@@ -87,7 +87,7 @@
 
     .link-icon {
         font-size: 0.9rem;
-        color: #fff;
+        color: var(--text-gradient-start);
         text-decoration: underline;
         text-decoration-color: var(--text-highlight);
         text-underline-offset: 4px;

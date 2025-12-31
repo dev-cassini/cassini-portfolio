@@ -74,7 +74,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #fff;
+  color: var(--text-gradient-start);
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-md);

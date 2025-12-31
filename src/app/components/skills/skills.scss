@@ -11,7 +11,7 @@
     background: var(--surface-color);
     padding: 2rem;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
     transition: transform 0.3s ease;
 
     &:hover {
@@ -22,9 +22,9 @@
 
 .category-title {
     font-size: 1.2rem;
-    color: #fff;
+    color: var(--text-gradient-start);
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
 

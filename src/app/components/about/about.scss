@@ -10,7 +10,7 @@
     }
 
     &__text {
-        color: #c5c6c7;
+        color: var(--text-primary);
         margin-bottom: 1.5rem;
         font-size: 1.05rem;
     }
