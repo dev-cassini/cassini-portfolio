@@ -49,6 +49,10 @@ export function shouldTriggerRandomSequence(isAnyCubeHovered: boolean, highlight
   return !isAnyCubeHovered && highlightCycle > RANDOM_TRIGGER_START && highlightCycle < RANDOM_TRIGGER_END;
 }
 
+export function shouldAdvanceActiveSequence(isAnyCubeHovered: boolean): boolean {
+  return !isAnyCubeHovered;
+}
+
 export function getReappearanceTime(hiddenAt: number, random: number): number {
   return hiddenAt + REAPPEAR_DELAY_SECONDS + random * REAPPEAR_DELAY_VARIANCE_SECONDS;
 }

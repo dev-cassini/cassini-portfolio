@@ -9,6 +9,7 @@ import {
   createNextCycle,
   getReappearanceTime,
   isReappearanceDue,
+  shouldAdvanceActiveSequence,
   shouldTriggerRandomSequence,
 } from './hero-animation-state';
 import { HeroAnimationRuntime } from './hero-animation-runtime';
@@ -519,10 +520,13 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
       // Handle collapsing animation
       if (cube.userData['isCollapsing']) {
-        cube.userData['collapseProgress'] += 0.02 * frameScale;
+        const shouldAdvanceSequence = shouldAdvanceActiveSequence(Boolean(this.hoveredCube));
+        if (shouldAdvanceSequence) {
+          cube.userData['collapseProgress'] += 0.02 * frameScale;
+        }
 
         if (cube.userData['animationType'] === 'collapse') {
-          if (cube.userData['collapseProgress'] >= 1) {
+          if (shouldAdvanceSequence && cube.userData['collapseProgress'] >= 1) {
             this.hideCube(cube);
             return;
           }
@@ -536,7 +540,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
           const maxScale = targetScale + 5;
 
           if (!cube.userData['isRetracting']) {
-            if (cube.userData['collapseProgress'] >= 0.5) {
+            if (shouldAdvanceSequence && cube.userData['collapseProgress'] >= 0.5) {
               cube.userData['isRetracting'] = true;
               cube.userData['collapseProgress'] = 0;
             } else {
@@ -549,7 +553,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
               }
             }
           } else {
-            if (cube.userData['collapseProgress'] >= 1) {
+            if (shouldAdvanceSequence && cube.userData['collapseProgress'] >= 1) {
               this.hideCube(cube);
               return;
             }

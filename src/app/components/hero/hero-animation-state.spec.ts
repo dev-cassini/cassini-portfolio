@@ -2,6 +2,7 @@ import {
   createNextCycle,
   getReappearanceTime,
   isReappearanceDue,
+  shouldAdvanceActiveSequence,
   shouldTriggerRandomSequence,
 } from './hero-animation-state';
 
@@ -20,6 +21,13 @@ describe('hero animation state', () => {
     it('does not trigger before or after the highlight window', () => {
       expect(shouldTriggerRandomSequence(false, 0.29)).toBe(false);
       expect(shouldTriggerRandomSequence(false, 0.36)).toBe(false);
+    });
+  });
+
+  describe('active sequences', () => {
+    it('freezes active collapse and expansion sequences while any cube is hovered', () => {
+      expect(shouldAdvanceActiveSequence(true)).toBe(false);
+      expect(shouldAdvanceActiveSequence(false)).toBe(true);
     });
   });
 
