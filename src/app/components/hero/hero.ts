@@ -11,8 +11,8 @@ import {
   isReappearanceDue,
   shouldTriggerRandomSequence,
 } from './hero-animation-state';
+import { HeroAnimationRuntime } from './hero-animation-runtime';
 
-let THREE: typeof import('three');
 type AnimatedCube = Mesh & { userData: CubeAnimationState };
 
 @Component({
@@ -60,6 +60,8 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
   private themeService = inject(ThemeService);
   private ngZone = inject(NgZone);
+  private runtime = inject(HeroAnimationRuntime);
+  private three?: typeof import('three');
 
   private scene!: Scene;
   private camera!: PerspectiveCamera;
@@ -143,7 +145,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
     this.cubes.forEach(cube => {
       if (cube.geometry) cube.geometry.dispose();
-      if (cube.material instanceof THREE.Material) cube.material.dispose();
+      if (this.three && cube.material instanceof this.three.Material) cube.material.dispose();
 
       // Dispose wireframe
       const wireframe = cube.userData['wireframe'];
@@ -171,7 +173,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   }
 
   private async loadVisual() {
-    THREE = await import('three');
+    this.three = await import('three');
     if (!this.canvasContainer || this.prefersReducedMotion) {
       this.visualLoadScheduled = false;
       return;
@@ -183,24 +185,26 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   }
 
   private initThree() {
-    if (!this.canvasContainer) return;
+    if (!this.canvasContainer || !this.three) return;
+
+    const three = this.three;
 
     const container = this.canvasContainer.nativeElement;
     const width = container.clientWidth;
     const height = container.clientHeight;
 
     // Scene
-    this.scene = new THREE.Scene();
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
+    this.scene = new three.Scene();
+    this.raycaster = new three.Raycaster();
+    this.mouse = new three.Vector2();
 
     // Camera
-    this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    this.camera = new three.PerspectiveCamera(75, width / height, 0.1, 1000);
     this.camera.position.set(8, 8, 8);
     this.camera.lookAt(0, 0, 0);
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this.renderer = new three.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(this.renderer.domElement);
@@ -242,23 +246,26 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   }
 
   private createCubes() {
+    if (!this.three) return;
+
+    const three = this.three;
     const gridSize = 5;
     const spacing = 1.2;
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const edges = new THREE.EdgesGeometry(geometry);
+    const geometry = new three.BoxGeometry(1, 1, 1);
+    const edges = new three.EdgesGeometry(geometry);
 
     for (let x = 0; x < gridSize; x++) {
       for (let z = 0; z < gridSize; z++) {
-        const nextCycle = createNextCycle();
-        const material = new THREE.MeshBasicMaterial({
+        const nextCycle = createNextCycle(() => this.runtime.random());
+        const material = new three.MeshBasicMaterial({
           transparent: true,
           opacity: 0,
         });
 
-        const cube = new THREE.Mesh(geometry, material) as unknown as AnimatedCube;
+        const cube = new three.Mesh(geometry, material) as unknown as AnimatedCube;
 
-        const lineMaterial = new THREE.LineBasicMaterial();
-        const wireframe = new THREE.LineSegments(edges, lineMaterial);
+        const lineMaterial = new three.LineBasicMaterial();
+        const wireframe = new three.LineSegments(edges, lineMaterial);
         cube.add(wireframe);
 
         // Center the grid
@@ -288,7 +295,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
           collapseProgress: 0,
           isHidden: false,
           reappearanceTime: 0,
-          spawnDelay: Math.random() * 3,
+          spawnDelay: this.runtime.random() * 3,
           hasSpawned: false,
           isGrowing: false,
           growProgress: 0,
@@ -333,7 +340,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
         // Clear previous hover
         if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
-          this.highlightCycleTime = Math.random() * 3;
+          this.highlightCycleTime = this.runtime.random() * 3;
         }
 
         // Set new hover
@@ -355,12 +362,12 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
           // Calculate random scatter targets
           this.cubes.forEach(cube => {
-            cube.userData['targetX'] = (Math.random() - 0.5) * 20;
-            cube.userData['targetY'] = (Math.random() - 0.5) * 20;
-            cube.userData['targetZ'] = (Math.random() - 0.5) * 20;
-            cube.userData['scatterRotationX'] = Math.random() * Math.PI * 2;
-            cube.userData['scatterRotationY'] = Math.random() * Math.PI * 2;
-            cube.userData['scatterRotationZ'] = Math.random() * Math.PI * 2;
+            cube.userData['targetX'] = (this.runtime.random() - 0.5) * 20;
+            cube.userData['targetY'] = (this.runtime.random() - 0.5) * 20;
+            cube.userData['targetZ'] = (this.runtime.random() - 0.5) * 20;
+            cube.userData['scatterRotationX'] = this.runtime.random() * Math.PI * 2;
+            cube.userData['scatterRotationY'] = this.runtime.random() * Math.PI * 2;
+            cube.userData['scatterRotationZ'] = this.runtime.random() * Math.PI * 2;
           });
 
           this.scatterTimeoutId = window.setTimeout(() => {
@@ -375,12 +382,12 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   }
 
   private updateThemeColors(theme: 'light' | 'dark') {
-    if (!this.scene) return;
+    if (!this.scene || !this.three) return;
 
     const isDarkMode = theme === 'dark';
 
     const bgColor = isDarkMode ? 0x0b0c10 : 0xffffff;
-    this.scene.background = new THREE.Color(bgColor);
+    this.scene.background = new this.three.Color(bgColor);
 
     this.currentColors = {
       wireframe: isDarkMode ? 0xffffff : 0x000000,
@@ -392,7 +399,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
   }
 
-  private animate(timestamp = performance.now()) {
+  private animate(timestamp = this.runtime.now()) {
     if (this.prefersReducedMotion) return;
 
     this.animationId = requestAnimationFrame((nextTimestamp) => this.animate(nextTimestamp));
@@ -570,12 +577,12 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   }
 
   private hideCube(cube: AnimatedCube) {
-    const nextCycle = createNextCycle();
+    const nextCycle = createNextCycle(() => this.runtime.random());
 
     cube.userData['isCollapsing'] = false;
     cube.userData['isRetracting'] = false;
     cube.userData['isHidden'] = true;
-    cube.userData['reappearanceTime'] = getReappearanceTime(this.time, Math.random());
+    cube.userData['reappearanceTime'] = getReappearanceTime(this.time, this.runtime.random());
     cube.visible = false;
     cube.userData['animationType'] = nextCycle.animationType;
     cube.userData['expandDirection'] = nextCycle.expandDirection;

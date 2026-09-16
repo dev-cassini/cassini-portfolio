@@ -35,3 +35,24 @@ test('hides the decorative visual when reduced motion is requested', async ({ pa
 
   await expect(page.locator('app-hero-visual')).toBeHidden();
 });
+
+test('handles desktop canvas interaction without browser errors', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+
+  await page.goto('/');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible();
+
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('Canvas did not have a bounding box');
+
+  await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.5);
+  await page.mouse.click(box.x + box.width * 0.75, box.y + box.height * 0.5);
+
+  await expect(canvas).toBeVisible();
+  expect(errors).toEqual([]);
+});
