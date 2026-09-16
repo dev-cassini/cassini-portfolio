@@ -16,13 +16,46 @@ let THREE: typeof import('three');
 type AnimatedCube = Mesh & { userData: CubeAnimationState };
 
 @Component({
-  selector: 'app-hero',
+  selector: 'app-hero-visual',
   standalone: true,
-  imports: [RouterLink, LogoComponent],
-  templateUrl: './hero.html',
-  styleUrl: './hero.scss',
+  template: '<div #canvasContainer class="canvas-container"></div>',
+  styles: [`
+    :host {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .canvas-container {
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      :host {
+        opacity: 0.3;
+        pointer-events: none;
+        z-index: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host {
+        display: none;
+      }
+    }
+  `],
 })
-export class Hero implements AfterViewInit, OnDestroy {
+export class HeroVisual implements AfterViewInit, OnDestroy {
   @ViewChild('canvasContainer') canvasContainer!: ElementRef;
 
   private themeService = inject(ThemeService);
@@ -36,6 +69,7 @@ export class Hero implements AfterViewInit, OnDestroy {
   private mouse!: Vector2;
   private hoveredCube: AnimatedCube | null = null;
   private animationId: number | null = null;
+  private previousFrameTime?: number;
   private time = 0;
   private highlightCycleTime = 0;
 
@@ -76,6 +110,7 @@ export class Hero implements AfterViewInit, OnDestroy {
           cancelAnimationFrame(this.animationId);
           this.animationId = null;
         }
+        this.previousFrameTime = undefined;
       } else if (this.renderer) {
         this.ngZone.runOutsideAngular(() => this.animate());
       } else {
@@ -357,13 +392,18 @@ export class Hero implements AfterViewInit, OnDestroy {
 
   }
 
-  private animate() {
+  private animate(timestamp = performance.now()) {
     if (this.prefersReducedMotion) return;
 
-    this.animationId = requestAnimationFrame(() => this.animate());
+    this.animationId = requestAnimationFrame((nextTimestamp) => this.animate(nextTimestamp));
 
-    this.time += 0.02;
-    this.highlightCycleTime += 0.02;
+    const elapsedSeconds = Math.min((timestamp - (this.previousFrameTime ?? timestamp)) / 1000, 0.1);
+    this.previousFrameTime = timestamp;
+    const frameScale = elapsedSeconds * 60;
+    const easing = 1 - Math.pow(0.95, frameScale);
+
+    this.time += elapsedSeconds * 1.2;
+    this.highlightCycleTime += elapsedSeconds * 1.2;
 
     const colors = this.currentColors;
 
@@ -372,13 +412,13 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Handle scatter animation
       if (this.isScattered) {
-        cube.position.x += (cube.userData['targetX'] - cube.position.x) * 0.05;
-        cube.position.y += (cube.userData['targetY'] - cube.position.y) * 0.05;
-        cube.position.z += (cube.userData['targetZ'] - cube.position.z) * 0.05;
+        cube.position.x += (cube.userData['targetX'] - cube.position.x) * easing;
+        cube.position.y += (cube.userData['targetY'] - cube.position.y) * easing;
+        cube.position.z += (cube.userData['targetZ'] - cube.position.z) * easing;
 
-        cube.rotation.x += (cube.userData['scatterRotationX'] - cube.rotation.x) * 0.05;
-        cube.rotation.y += (cube.userData['scatterRotationY'] - cube.rotation.y) * 0.05;
-        cube.rotation.z += (cube.userData['scatterRotationZ'] - cube.rotation.z) * 0.05;
+        cube.rotation.x += (cube.userData['scatterRotationX'] - cube.rotation.x) * easing;
+        cube.rotation.y += (cube.userData['scatterRotationY'] - cube.rotation.y) * easing;
+        cube.rotation.z += (cube.userData['scatterRotationZ'] - cube.rotation.z) * easing;
 
         (cube.material as MeshBasicMaterial).opacity = 0.8;
         (cube.material as MeshBasicMaterial).color.setHex(colors.highlightFill);
@@ -386,11 +426,11 @@ export class Hero implements AfterViewInit, OnDestroy {
         return;
       } else {
         // Returning from scatter
-        cube.position.x += (cube.userData['originalX'] - cube.position.x) * 0.05;
-        cube.position.z += (cube.userData['originalZ'] - cube.position.z) * 0.05;
-        cube.rotation.x += (0 - cube.rotation.x) * 0.05;
-        cube.rotation.y += (0 - cube.rotation.y) * 0.05;
-        cube.rotation.z += (0 - cube.rotation.z) * 0.05;
+        cube.position.x += (cube.userData['originalX'] - cube.position.x) * easing;
+        cube.position.z += (cube.userData['originalZ'] - cube.position.z) * easing;
+        cube.rotation.x += (0 - cube.rotation.x) * easing;
+        cube.rotation.y += (0 - cube.rotation.y) * easing;
+        cube.rotation.z += (0 - cube.rotation.z) * easing;
       }
 
       // Handle initial spawn animation
@@ -427,7 +467,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Handle growing animation when cube reappears
       if (cube.userData['isGrowing']) {
-        cube.userData['growProgress'] += 0.03;
+        cube.userData['growProgress'] += 0.03 * frameScale;
 
         if (cube.userData['growProgress'] >= 1) {
           cube.userData['isGrowing'] = false;
@@ -448,7 +488,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Handle collapsing animation
       if (cube.userData['isCollapsing']) {
-        cube.userData['collapseProgress'] += 0.02;
+        cube.userData['collapseProgress'] += 0.02 * frameScale;
 
         if (cube.userData['animationType'] === 'collapse') {
           if (cube.userData['collapseProgress'] >= 1) {
@@ -501,7 +541,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Normal wave animation
       cube.scale.y = targetScale;
-      cube.position.y += (0 - cube.position.y) * 0.05;
+      cube.position.y += (0 - cube.position.y) * easing;
 
       // Check for highlight trigger
       if (shouldTriggerRandomSequence(Boolean(this.hoveredCube), highlightCycle)) {
@@ -541,3 +581,12 @@ export class Hero implements AfterViewInit, OnDestroy {
     cube.userData['expandDirection'] = nextCycle.expandDirection;
   }
 }
+
+@Component({
+  selector: 'app-hero',
+  standalone: true,
+  imports: [RouterLink, LogoComponent, HeroVisual],
+  templateUrl: './hero.html',
+  styleUrl: './hero.scss',
+})
+export class Hero {}

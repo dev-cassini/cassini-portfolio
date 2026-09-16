@@ -33,5 +33,5 @@ test('hides the decorative visual when reduced motion is requested', async ({ pa
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
 
-  await expect(page.locator('.hero__visual')).toBeHidden();
+  await expect(page.locator('app-hero-visual')).toBeHidden();
 });
