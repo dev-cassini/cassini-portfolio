@@ -1,19 +1,22 @@
-import { Component } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeToggle } from '../theme-toggle/theme-toggle';
 import { LogoComponent } from '../logo/logo.component';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, ThemeToggle, LogoComponent],
+  imports: [RouterLink, RouterLinkActive, ThemeToggle, LogoComponent],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class Header {
-  constructor(private router: Router) { }
+  isMenuOpen = signal(false);
 
-  navigateToHome() {
-    this.router.navigate(['/']);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  toggleMenu() {
+    this.isMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  closeMenu() {
+    this.isMenuOpen.set(false);
   }
 }

@@ -4,9 +4,10 @@
   --bg-color: #ffffff;
   --surface-color: #f8f9fa;
   --text-primary: #2d3436;
-  --text-highlight: #0984e3;
-  --text-secondary: #00cec9;
-  --text-muted: #636e72;
+  --text-highlight: #006bb6;
+  --text-secondary: #007a76;
+  --text-muted: #4d5658;
+  --focus-ring: #004f8f;
   --border-color: #dfe6e9;
   --text-gradient-start: #2d3436;
   --glow-primary: rgba(9, 132, 227, 0.4);
@@ -36,6 +37,7 @@
   --text-highlight: #66fcf1;
   --text-secondary: #45a29e;
   --text-muted: #8892b0;
+  --focus-ring: #ffffff;
   --border-color: rgba(102, 252, 241, 0.1);
   --text-gradient-start: #ffffff;
   --glow-primary: rgba(102, 252, 241, 0.6);
@@ -66,6 +68,11 @@ a {
   &:hover {
     color: var(--text-secondary);
   }
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 h1,
@@ -107,5 +114,16 @@ section {
   &:hover {
     background: rgba(102, 252, 241, 0.1);
     transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

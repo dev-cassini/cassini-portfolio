@@ -32,7 +32,7 @@ export class ThemeService {
         const storedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
         if (storedTheme) {
             this.theme.set(storedTheme);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        } else if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
             this.theme.set('dark');
         }
     }

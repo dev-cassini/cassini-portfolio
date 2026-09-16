@@ -30,6 +30,9 @@ export class Hero implements AfterViewInit, OnDestroy {
 
   private isScattered = false;
   private removeClickListener?: () => void;
+  private reducedMotionQuery?: MediaQueryList;
+  private removeReducedMotionListener?: () => void;
+  private prefersReducedMotion = false;
 
   // Cleanup function for resize listener
   private removeResizeListener?: () => void;
@@ -44,13 +47,31 @@ export class Hero implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    this.reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.prefersReducedMotion = this.reducedMotionQuery.matches;
     this.initThree();
-    this.setupInteraction();
+    if (!this.prefersReducedMotion) {
+      this.setupInteraction();
+    }
 
-    // Start animation loop outside Angular zone to prevent change detection spam
-    this.ngZone.runOutsideAngular(() => {
-      this.animate();
-    });
+    const handleReducedMotionChange = (event: MediaQueryListEvent) => {
+      this.prefersReducedMotion = event.matches;
+      if (event.matches) {
+        if (this.animationId !== null) {
+          cancelAnimationFrame(this.animationId);
+          this.animationId = null;
+        }
+      } else {
+        this.animate();
+      }
+    };
+    this.reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
+    this.removeReducedMotionListener = () => this.reducedMotionQuery?.removeEventListener('change', handleReducedMotionChange);
+
+    if (!this.prefersReducedMotion) {
+      // Start animation loop outside Angular zone to prevent change detection spam.
+      this.ngZone.runOutsideAngular(() => this.animate());
+    }
   }
 
   ngOnDestroy() {
@@ -61,6 +82,7 @@ export class Hero implements AfterViewInit, OnDestroy {
     if (this.removeResizeListener) this.removeResizeListener();
     if (this.removeMouseMoveListener) this.removeMouseMoveListener();
     if (this.removeClickListener) this.removeClickListener();
+    if (this.removeReducedMotionListener) this.removeReducedMotionListener();
 
     // Dispose Three.js resources
     if (this.renderer) {
@@ -270,8 +292,8 @@ export class Hero implements AfterViewInit, OnDestroy {
         }
       };
 
-      window.addEventListener('click', handleClick);
-      this.removeClickListener = () => window.removeEventListener('click', handleClick);
+      this.renderer.domElement.addEventListener('click', handleClick);
+      this.removeClickListener = () => this.renderer.domElement.removeEventListener('click', handleClick);
     });
   }
 
@@ -302,6 +324,8 @@ export class Hero implements AfterViewInit, OnDestroy {
   }
 
   private animate() {
+    if (this.prefersReducedMotion) return;
+
     this.animationId = requestAnimationFrame(() => this.animate());
 
     this.time += 0.02;
