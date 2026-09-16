@@ -79,6 +79,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
   private removeClickListener?: () => void;
   private reducedMotionQuery?: MediaQueryList;
   private removeReducedMotionListener?: () => void;
+  private removeVisibilityListener?: () => void;
   private prefersReducedMotion = false;
   private visualLoadScheduled = false;
   private scatterTimeoutId?: number;
@@ -108,13 +109,9 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
     const handleReducedMotionChange = (event: MediaQueryListEvent) => {
       this.prefersReducedMotion = event.matches;
       if (event.matches) {
-        if (this.animationId !== null) {
-          cancelAnimationFrame(this.animationId);
-          this.animationId = null;
-        }
-        this.previousFrameTime = undefined;
+        this.stopAnimation();
       } else if (this.renderer) {
-        this.ngZone.runOutsideAngular(() => this.animate());
+        this.startAnimation();
       } else {
         this.scheduleVisualLoad();
       }
@@ -122,13 +119,21 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
     this.reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
     this.removeReducedMotionListener = () => this.reducedMotionQuery?.removeEventListener('change', handleReducedMotionChange);
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        this.stopAnimation();
+      } else if (!this.prefersReducedMotion && this.renderer) {
+        this.startAnimation();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    this.removeVisibilityListener = () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+
     this.scheduleVisualLoad();
   }
 
   ngOnDestroy() {
-    if (this.animationId !== null) {
-      cancelAnimationFrame(this.animationId);
-    }
+    this.stopAnimation();
     if (this.scatterTimeoutId !== undefined) {
       window.clearTimeout(this.scatterTimeoutId);
     }
@@ -137,6 +142,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
     if (this.removeMouseMoveListener) this.removeMouseMoveListener();
     if (this.removeClickListener) this.removeClickListener();
     if (this.removeReducedMotionListener) this.removeReducedMotionListener();
+    if (this.removeVisibilityListener) this.removeVisibilityListener();
 
     // Dispose Three.js resources
     if (this.renderer) {
@@ -181,7 +187,7 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
     this.initThree();
     this.setupInteraction();
-    this.ngZone.runOutsideAngular(() => this.animate());
+    this.startAnimation();
   }
 
   private initThree() {
@@ -399,8 +405,26 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
   }
 
+  private startAnimation() {
+    if (this.animationId !== null || this.prefersReducedMotion || document.hidden) return;
+
+    this.ngZone.runOutsideAngular(() => this.animate());
+  }
+
+  private stopAnimation() {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+    this.previousFrameTime = undefined;
+  }
+
   private animate(timestamp = this.runtime.now()) {
-    if (this.prefersReducedMotion) return;
+    if (this.prefersReducedMotion || document.hidden) {
+      this.animationId = null;
+      this.previousFrameTime = undefined;
+      return;
+    }
 
     this.animationId = requestAnimationFrame((nextTimestamp) => this.animate(nextTimestamp));
 

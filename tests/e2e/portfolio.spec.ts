@@ -56,3 +56,11 @@ test('handles desktop canvas interaction without browser errors', async ({ page 
   await expect(canvas).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('handles document visibility changes without disrupting the visual', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();
+
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.locator('canvas')).toBeVisible();
+});
