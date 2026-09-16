@@ -3,9 +3,17 @@ import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import type { LineBasicMaterial, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from 'three';
 import { LogoComponent } from '../logo/logo.component';
-import { createNextCycle, getReappearanceTime, isReappearanceDue, shouldTriggerRandomSequence } from './hero-animation-state';
+import {
+  type AnimationColors,
+  type CubeAnimationState,
+  createNextCycle,
+  getReappearanceTime,
+  isReappearanceDue,
+  shouldTriggerRandomSequence,
+} from './hero-animation-state';
 
 let THREE: typeof import('three');
+type AnimatedCube = Mesh & { userData: CubeAnimationState };
 
 @Component({
   selector: 'app-hero',
@@ -23,10 +31,10 @@ export class Hero implements AfterViewInit, OnDestroy {
   private scene!: Scene;
   private camera!: PerspectiveCamera;
   private renderer!: WebGLRenderer;
-  private cubes: Mesh[] = [];
+  private cubes: AnimatedCube[] = [];
   private raycaster!: Raycaster;
   private mouse!: Vector2;
-  private hoveredCube: Mesh | null = null;
+  private hoveredCube: AnimatedCube | null = null;
   private animationId: number | null = null;
   private time = 0;
   private highlightCycleTime = 0;
@@ -37,6 +45,14 @@ export class Hero implements AfterViewInit, OnDestroy {
   private removeReducedMotionListener?: () => void;
   private prefersReducedMotion = false;
   private visualLoadScheduled = false;
+  private scatterTimeoutId?: number;
+  private currentColors: AnimationColors = {
+    wireframe: 0xffffff,
+    wireframeHover: 0x000000,
+    fill: 0x000000,
+    fillHover: 0xffffff,
+    highlightFill: 0xffffff,
+  };
 
   // Cleanup function for resize listener
   private removeResizeListener?: () => void;
@@ -75,6 +91,9 @@ export class Hero implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
+    }
+    if (this.scatterTimeoutId !== undefined) {
+      window.clearTimeout(this.scatterTimeoutId);
     }
 
     if (this.removeResizeListener) this.removeResizeListener();
@@ -148,7 +167,7 @@ export class Hero implements AfterViewInit, OnDestroy {
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(this.renderer.domElement);
 
     // Create Cubes
@@ -201,7 +220,7 @@ export class Hero implements AfterViewInit, OnDestroy {
           opacity: 0,
         });
 
-        const cube = new THREE.Mesh(geometry, material);
+        const cube = new THREE.Mesh(geometry, material) as unknown as AnimatedCube;
 
         const lineMaterial = new THREE.LineBasicMaterial();
         const wireframe = new THREE.LineSegments(edges, lineMaterial);
@@ -229,12 +248,10 @@ export class Hero implements AfterViewInit, OnDestroy {
           scatterRotationX: 0,
           scatterRotationY: 0,
           scatterRotationZ: 0,
-          baseY: 0,
           highlightTime: (x * 2 + z * 3) * 0.5,
           isCollapsing: false,
           collapseProgress: 0,
           isHidden: false,
-          hideStartTime: 0,
           reappearanceTime: 0,
           spawnDelay: Math.random() * 3,
           hasSpawned: false,
@@ -244,7 +261,6 @@ export class Hero implements AfterViewInit, OnDestroy {
           expandDirection: nextCycle.expandDirection,
           isRetracting: false,
           wireframe: wireframe,
-          isHovered: false
         };
 
         cube.visible = false;
@@ -282,16 +298,12 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         // Clear previous hover
         if (this.hoveredCube && !this.hoveredCube.userData['isCollapsing']) {
-          this.hoveredCube.userData['isHovered'] = false;
           this.highlightCycleTime = Math.random() * 3;
         }
 
         // Set new hover
         if (intersects.length > 0) {
-          this.hoveredCube = intersects[0].object as Mesh;
-          if (!this.hoveredCube.userData['isCollapsing']) {
-            this.hoveredCube.userData['isHovered'] = true;
-          }
+          this.hoveredCube = intersects[0].object as AnimatedCube;
         } else {
           this.hoveredCube = null;
         }
@@ -316,7 +328,7 @@ export class Hero implements AfterViewInit, OnDestroy {
             cube.userData['scatterRotationZ'] = Math.random() * Math.PI * 2;
           });
 
-          setTimeout(() => {
+          this.scatterTimeoutId = window.setTimeout(() => {
             this.isScattered = false;
           }, 2300);
         }
@@ -332,16 +344,10 @@ export class Hero implements AfterViewInit, OnDestroy {
 
     const isDarkMode = theme === 'dark';
 
-    // Update background
-    // We use alpha: true in renderer, so we might not need scene background if CSS handles it.
-    // But the React code set it explicitly. Let's match the React code logic but use our theme colors.
-    // Actually, let's keep it transparent so the CSS gradient background shows through if we want.
-    // The React code used: const bgColor = isDarkMode ? 0x0a0a0a : 0xffffff;
-    // Let's stick to the React logic for now to ensure it looks as intended.
-    const bgColor = isDarkMode ? 0x0b0c10 : 0xffffff; // Using our dark theme bg
+    const bgColor = isDarkMode ? 0x0b0c10 : 0xffffff;
     this.scene.background = new THREE.Color(bgColor);
 
-    const colors = {
+    this.currentColors = {
       wireframe: isDarkMode ? 0xffffff : 0x000000,
       wireframeHover: isDarkMode ? 0x000000 : 0xffffff,
       fill: isDarkMode ? 0x000000 : 0xffffff,
@@ -349,8 +355,6 @@ export class Hero implements AfterViewInit, OnDestroy {
       highlightFill: isDarkMode ? 0xffffff : 0x000000
     };
 
-    // Store colors in a property accessible to animate loop
-    (this as any).currentColors = colors;
   }
 
   private animate() {
@@ -361,13 +365,7 @@ export class Hero implements AfterViewInit, OnDestroy {
     this.time += 0.02;
     this.highlightCycleTime += 0.02;
 
-    const colors = (this as any).currentColors || {
-      wireframe: 0xffffff,
-      wireframeHover: 0x000000,
-      fill: 0x000000,
-      fillHover: 0xffffff,
-      highlightFill: 0xffffff
-    };
+    const colors = this.currentColors;
 
     this.cubes.forEach((cube) => {
       const { x, z, highlightTime, wireframe } = cube.userData;
@@ -531,13 +529,12 @@ export class Hero implements AfterViewInit, OnDestroy {
     this.renderer.render(this.scene, this.camera);
   }
 
-  private hideCube(cube: Mesh) {
+  private hideCube(cube: AnimatedCube) {
     const nextCycle = createNextCycle();
 
     cube.userData['isCollapsing'] = false;
     cube.userData['isRetracting'] = false;
     cube.userData['isHidden'] = true;
-    cube.userData['hideStartTime'] = this.time;
     cube.userData['reappearanceTime'] = getReappearanceTime(this.time, Math.random());
     cube.visible = false;
     cube.userData['animationType'] = nextCycle.animationType;

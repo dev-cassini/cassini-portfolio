@@ -16,6 +16,11 @@ describe('hero animation state', () => {
     it('suppresses new random sequences while any cube is hovered', () => {
       expect(shouldTriggerRandomSequence(true, 0.32)).toBe(false);
     });
+
+    it('does not trigger before or after the highlight window', () => {
+      expect(shouldTriggerRandomSequence(false, 0.29)).toBe(false);
+      expect(shouldTriggerRandomSequence(false, 0.36)).toBe(false);
+    });
   });
 
   describe('hidden-cube timing', () => {
@@ -31,6 +36,10 @@ describe('hero animation state', () => {
       expect(isReappearanceDue(12.99, reappearanceTime)).toBe(false);
       expect(isReappearanceDue(13, reappearanceTime)).toBe(true);
     });
+
+    it('treats a reappearance deadline in the past as due', () => {
+      expect(isReappearanceDue(14, 13)).toBe(true);
+    });
   });
 
   describe('next cycle selection', () => {
@@ -42,6 +51,16 @@ describe('hero animation state', () => {
       expect(createNextCycle(() => 0.6)).toEqual({
         animationType: 'expand',
         expandDirection: 'down',
+      });
+    });
+
+    it('uses separate random values for the animation and direction', () => {
+      const values = [0.8, 0.2];
+      const random = () => values.shift()!;
+
+      expect(createNextCycle(random)).toEqual({
+        animationType: 'expand',
+        expandDirection: 'up',
       });
     });
   });
