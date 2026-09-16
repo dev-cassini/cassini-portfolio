@@ -1,8 +1,10 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, effect, inject, NgZone } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
-import * as THREE from 'three';
+import type { LineBasicMaterial, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from 'three';
 import { LogoComponent } from '../logo/logo.component';
+
+let THREE: typeof import('three');
 
 @Component({
   selector: 'app-hero',
@@ -17,13 +19,13 @@ export class Hero implements AfterViewInit, OnDestroy {
   private themeService = inject(ThemeService);
   private ngZone = inject(NgZone);
 
-  private scene!: THREE.Scene;
-  private camera!: THREE.PerspectiveCamera;
-  private renderer!: THREE.WebGLRenderer;
-  private cubes: THREE.Mesh[] = [];
-  private raycaster = new THREE.Raycaster();
-  private mouse = new THREE.Vector2();
-  private hoveredCube: THREE.Mesh | null = null;
+  private scene!: Scene;
+  private camera!: PerspectiveCamera;
+  private renderer!: WebGLRenderer;
+  private cubes: Mesh[] = [];
+  private raycaster!: Raycaster;
+  private mouse!: Vector2;
+  private hoveredCube: Mesh | null = null;
   private animationId: number | null = null;
   private time = 0;
   private highlightCycleTime = 0;
@@ -33,6 +35,7 @@ export class Hero implements AfterViewInit, OnDestroy {
   private reducedMotionQuery?: MediaQueryList;
   private removeReducedMotionListener?: () => void;
   private prefersReducedMotion = false;
+  private visualLoadScheduled = false;
 
   // Cleanup function for resize listener
   private removeResizeListener?: () => void;
@@ -49,11 +52,6 @@ export class Hero implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.prefersReducedMotion = this.reducedMotionQuery.matches;
-    this.initThree();
-    if (!this.prefersReducedMotion) {
-      this.setupInteraction();
-    }
-
     const handleReducedMotionChange = (event: MediaQueryListEvent) => {
       this.prefersReducedMotion = event.matches;
       if (event.matches) {
@@ -61,17 +59,16 @@ export class Hero implements AfterViewInit, OnDestroy {
           cancelAnimationFrame(this.animationId);
           this.animationId = null;
         }
+      } else if (this.renderer) {
+        this.ngZone.runOutsideAngular(() => this.animate());
       } else {
-        this.animate();
+        this.scheduleVisualLoad();
       }
     };
     this.reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
     this.removeReducedMotionListener = () => this.reducedMotionQuery?.removeEventListener('change', handleReducedMotionChange);
 
-    if (!this.prefersReducedMotion) {
-      // Start animation loop outside Angular zone to prevent change detection spam.
-      this.ngZone.runOutsideAngular(() => this.animate());
-    }
+    this.scheduleVisualLoad();
   }
 
   ngOnDestroy() {
@@ -102,6 +99,34 @@ export class Hero implements AfterViewInit, OnDestroy {
     });
   }
 
+  private scheduleVisualLoad() {
+    if (this.prefersReducedMotion || this.visualLoadScheduled) return;
+
+    this.visualLoadScheduled = true;
+    const loadVisual = () => void this.loadVisual();
+    const requestIdleCallback = (window as Window & {
+      requestIdleCallback?: (callback: () => void) => number;
+    }).requestIdleCallback;
+
+    if (requestIdleCallback) {
+      requestIdleCallback(loadVisual);
+    } else {
+      window.setTimeout(loadVisual, 0);
+    }
+  }
+
+  private async loadVisual() {
+    THREE = await import('three');
+    if (!this.canvasContainer || this.prefersReducedMotion) {
+      this.visualLoadScheduled = false;
+      return;
+    }
+
+    this.initThree();
+    this.setupInteraction();
+    this.ngZone.runOutsideAngular(() => this.animate());
+  }
+
   private initThree() {
     if (!this.canvasContainer) return;
 
@@ -111,6 +136,8 @@ export class Hero implements AfterViewInit, OnDestroy {
 
     // Scene
     this.scene = new THREE.Scene();
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -258,7 +285,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         // Set new hover
         if (intersects.length > 0) {
-          this.hoveredCube = intersects[0].object as THREE.Mesh;
+          this.hoveredCube = intersects[0].object as Mesh;
           if (!this.hoveredCube.userData['isCollapsing']) {
             this.hoveredCube.userData['isHovered'] = true;
           }
@@ -352,9 +379,9 @@ export class Hero implements AfterViewInit, OnDestroy {
         cube.rotation.y += (cube.userData['scatterRotationY'] - cube.rotation.y) * 0.05;
         cube.rotation.z += (cube.userData['scatterRotationZ'] - cube.rotation.z) * 0.05;
 
-        (cube.material as THREE.MeshBasicMaterial).opacity = 0.8;
-        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.highlightFill);
-        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+        (cube.material as MeshBasicMaterial).opacity = 0.8;
+        (cube.material as MeshBasicMaterial).color.setHex(colors.highlightFill);
+        (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
         return;
       } else {
         // Returning from scatter
@@ -409,9 +436,9 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         cube.scale.y = targetScale * cube.userData['growProgress'];
         cube.position.y = 0;
-        (cube.material as THREE.MeshBasicMaterial).opacity = 0;
-        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.fill);
-        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+        (cube.material as MeshBasicMaterial).opacity = 0;
+        (cube.material as MeshBasicMaterial).color.setHex(colors.fill);
+        (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
         return;
       }
 
@@ -435,9 +462,9 @@ export class Hero implements AfterViewInit, OnDestroy {
           }
           cube.scale.y = targetScale * (1 - cube.userData['collapseProgress']);
           cube.position.y = 0;
-          (cube.material as THREE.MeshBasicMaterial).opacity = 0.3;
-          (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.highlightFill);
-          (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+          (cube.material as MeshBasicMaterial).opacity = 0.3;
+          (cube.material as MeshBasicMaterial).color.setHex(colors.highlightFill);
+          (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
           return;
         } else {
           const maxScale = targetScale + 5;
@@ -476,9 +503,9 @@ export class Hero implements AfterViewInit, OnDestroy {
             }
           }
 
-          (cube.material as THREE.MeshBasicMaterial).opacity = 0.3;
-          (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.highlightFill);
-          (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+          (cube.material as MeshBasicMaterial).opacity = 0.3;
+          (cube.material as MeshBasicMaterial).color.setHex(colors.highlightFill);
+          (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
           return;
         }
       }
@@ -496,17 +523,17 @@ export class Hero implements AfterViewInit, OnDestroy {
       // Normal highlighting (either from cycle or hover)
       const isHoveredCube = cube.id === this.hoveredCube?.id;
       if (isHoveredCube && !cube.userData['isCollapsing']) {
-        (cube.material as THREE.MeshBasicMaterial).opacity = 1;
-        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.fillHover);
-        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframeHover);
+        (cube.material as MeshBasicMaterial).opacity = 1;
+        (cube.material as MeshBasicMaterial).color.setHex(colors.fillHover);
+        (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframeHover);
       } else if (isHighlighted && !cube.userData['isCollapsing']) {
-        (cube.material as THREE.MeshBasicMaterial).opacity = 0.3;
-        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.highlightFill);
-        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+        (cube.material as MeshBasicMaterial).opacity = 0.3;
+        (cube.material as MeshBasicMaterial).color.setHex(colors.highlightFill);
+        (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
       } else if (!cube.userData['isCollapsing']) {
-        (cube.material as THREE.MeshBasicMaterial).opacity = 0;
-        (cube.material as THREE.MeshBasicMaterial).color.setHex(colors.fill);
-        (wireframe.material as THREE.LineBasicMaterial).color.setHex(colors.wireframe);
+        (cube.material as MeshBasicMaterial).opacity = 0;
+        (cube.material as MeshBasicMaterial).color.setHex(colors.fill);
+        (wireframe.material as LineBasicMaterial).color.setHex(colors.wireframe);
       }
     });
 
