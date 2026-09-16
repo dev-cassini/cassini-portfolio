@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import type { LineBasicMaterial, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from 'three';
 import { LogoComponent } from '../logo/logo.component';
+import { createNextCycle, getReappearanceTime, isReappearanceDue, shouldTriggerRandomSequence } from './hero-animation-state';
 
 let THREE: typeof import('three');
 
@@ -194,6 +195,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
     for (let x = 0; x < gridSize; x++) {
       for (let z = 0; z < gridSize; z++) {
+        const nextCycle = createNextCycle();
         const material = new THREE.MeshBasicMaterial({
           transparent: true,
           opacity: 0,
@@ -233,12 +235,13 @@ export class Hero implements AfterViewInit, OnDestroy {
           collapseProgress: 0,
           isHidden: false,
           hideStartTime: 0,
+          reappearanceTime: 0,
           spawnDelay: Math.random() * 3,
           hasSpawned: false,
           isGrowing: false,
           growProgress: 0,
-          animationType: Math.random() > 0.5 ? 'collapse' : 'expand',
-          expandDirection: Math.random() > 0.5 ? 'up' : 'down',
+          animationType: nextCycle.animationType,
+          expandDirection: nextCycle.expandDirection,
           isRetracting: false,
           wireframe: wireframe,
           isHovered: false
@@ -406,8 +409,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
       // Check if cube is hidden and waiting to reappear
       if (cube.userData['isHidden']) {
-        const timeSinceHidden = this.time - cube.userData['hideStartTime'];
-        if (timeSinceHidden > 2 + Math.random() * 2) {
+        if (isReappearanceDue(this.time, cube.userData['reappearanceTime'])) {
           cube.userData['isHidden'] = false;
           cube.userData['isGrowing'] = true;
           cube.userData['growProgress'] = 0;
@@ -452,12 +454,7 @@ export class Hero implements AfterViewInit, OnDestroy {
 
         if (cube.userData['animationType'] === 'collapse') {
           if (cube.userData['collapseProgress'] >= 1) {
-            cube.userData['isCollapsing'] = false;
-            cube.userData['isHidden'] = true;
-            cube.userData['hideStartTime'] = this.time;
-            cube.visible = false;
-            cube.userData['animationType'] = Math.random() > 0.5 ? 'collapse' : 'expand';
-            cube.userData['expandDirection'] = Math.random() > 0.5 ? 'up' : 'down';
+            this.hideCube(cube);
             return;
           }
           cube.scale.y = targetScale * (1 - cube.userData['collapseProgress']);
@@ -484,13 +481,7 @@ export class Hero implements AfterViewInit, OnDestroy {
             }
           } else {
             if (cube.userData['collapseProgress'] >= 1) {
-              cube.userData['isCollapsing'] = false;
-              cube.userData['isRetracting'] = false;
-              cube.userData['isHidden'] = true;
-              cube.userData['hideStartTime'] = this.time;
-              cube.visible = false;
-              cube.userData['animationType'] = Math.random() > 0.5 ? 'collapse' : 'expand';
-              cube.userData['expandDirection'] = Math.random() > 0.5 ? 'up' : 'down';
+              this.hideCube(cube);
               return;
             }
 
@@ -515,7 +506,7 @@ export class Hero implements AfterViewInit, OnDestroy {
       cube.position.y += (0 - cube.position.y) * 0.05;
 
       // Check for highlight trigger
-      if (isHighlighted && highlightCycle > 0.3 && highlightCycle < 0.35) {
+      if (shouldTriggerRandomSequence(Boolean(this.hoveredCube), highlightCycle)) {
         cube.userData['isCollapsing'] = true;
         cube.userData['collapseProgress'] = 0;
       }
@@ -538,5 +529,18 @@ export class Hero implements AfterViewInit, OnDestroy {
     });
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  private hideCube(cube: Mesh) {
+    const nextCycle = createNextCycle();
+
+    cube.userData['isCollapsing'] = false;
+    cube.userData['isRetracting'] = false;
+    cube.userData['isHidden'] = true;
+    cube.userData['hideStartTime'] = this.time;
+    cube.userData['reappearanceTime'] = getReappearanceTime(this.time, Math.random());
+    cube.visible = false;
+    cube.userData['animationType'] = nextCycle.animationType;
+    cube.userData['expandDirection'] = nextCycle.expandDirection;
   }
 }
