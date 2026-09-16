@@ -520,7 +520,10 @@ export class HeroVisual implements AfterViewInit, OnDestroy {
 
       // Handle collapsing animation
       if (cube.userData['isCollapsing']) {
-        const shouldAdvanceSequence = shouldAdvanceActiveSequence(Boolean(this.hoveredCube));
+        const shouldAdvanceSequence = shouldAdvanceActiveSequence(
+          Boolean(this.hoveredCube),
+          cube.id === this.hoveredCube?.id,
+        );
         if (shouldAdvanceSequence) {
           cube.userData['collapseProgress'] += 0.02 * frameScale;
         }

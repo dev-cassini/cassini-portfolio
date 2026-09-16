@@ -25,9 +25,10 @@ describe('hero animation state', () => {
   });
 
   describe('active sequences', () => {
-    it('freezes active collapse and expansion sequences while any cube is hovered', () => {
-      expect(shouldAdvanceActiveSequence(true)).toBe(false);
-      expect(shouldAdvanceActiveSequence(false)).toBe(true);
+    it('allows the hovered cube to complete while pausing all other active sequences', () => {
+      expect(shouldAdvanceActiveSequence(true, true)).toBe(true);
+      expect(shouldAdvanceActiveSequence(true, false)).toBe(false);
+      expect(shouldAdvanceActiveSequence(false, false)).toBe(true);
     });
   });
 
