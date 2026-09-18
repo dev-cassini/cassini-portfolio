@@ -3,7 +3,7 @@
 .header__brand { color: var(--text-primary); font-family: var(--font-mono); font-size: .62rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
 .header__brand span { color: var(--text-muted); }
 .nav__list { display: flex; gap: 1.3rem; margin: 0; padding: 0; list-style: none; }
-.nav__link { color: var(--text-muted); font-family: var(--font-mono); font-size: .55rem; letter-spacing: .06em; text-transform: uppercase; transition: color var(--transition-speed) ease; }
+.nav__link { color: var(--text-muted); font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; transition: color var(--transition-speed) ease; }
 .nav__link:hover, .nav__link--active { color: var(--text-highlight); }
 app-theme-toggle { justify-self: end; }
 .nav-toggle { display: none; }
