@@ -48,6 +48,8 @@ test('renders the approved contour-terrain hero without browser errors', async (
   await expect(page.locator('app-hero-visual .visual')).toBeVisible();
   await expect(page.locator('app-contour-terrain')).toHaveAttribute('data-terrain-status', 'ready');
   await expect(page.locator('app-contour-terrain canvas')).toBeVisible();
+  await expect(page.locator('.system-stage')).toHaveCount(4);
+  await expect(page.locator('.system-route--trace')).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -58,6 +60,7 @@ test('keeps the static terrain visible on mobile with reduced motion and release
   await page.goto('/');
   await expect(page.locator('app-contour-terrain')).toHaveAttribute('data-terrain-status', 'ready');
   await expect(page.locator('app-contour-terrain canvas')).toBeVisible();
+  await expect(page.locator('.system-route--trace')).toHaveCSS('animation-name', 'none');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('link', { name: 'View summit log' }).click();
   await expect(page.locator('app-contour-terrain')).toHaveCount(0);

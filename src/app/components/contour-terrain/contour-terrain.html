@@ -1,8 +1,33 @@
-<div class="terrain-heading"><span><i></i> ALPINE CONTOURS</span><span>STUDY / 06</span></div>
+<div class="terrain-heading"><span><i></i> SYSTEM TOPOLOGY</span><span>MESH / 192</span></div>
 <div class="terrain-frame">
   <canvas #canvas aria-hidden="true" [class.unavailable]="status() === 'fallback'"></canvas>
   @if (status() === 'fallback') {
     <img class="terrain-fallback" src="visuals/contour-terrain.png" alt="" width="1200" height="880" />
   }
+  <svg class="system-map" viewBox="0 0 100 73.333" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <path class="system-route system-route--underlay" d="M34 29 43 13 63 24 63 39" pathLength="1" />
+    <path class="system-route system-route--trace" d="M34 29 43 13 63 24 63 39" pathLength="1" />
+
+    <g class="system-stage" style="--stage-delay: 0s">
+      <circle class="system-stage__ring" cx="34" cy="29" r="1.35" />
+      <circle class="system-stage__node" cx="34" cy="29" r="0.48" />
+      <text x="25.5" y="33.2">01_DISCOVER</text>
+    </g>
+    <g class="system-stage" style="--stage-delay: 1.6s">
+      <circle class="system-stage__ring" cx="43" cy="13" r="1.35" />
+      <circle class="system-stage__node" cx="43" cy="13" r="0.48" />
+      <text x="38" y="8.8">02_DESIGN</text>
+    </g>
+    <g class="system-stage" style="--stage-delay: 3.2s">
+      <circle class="system-stage__ring" cx="63" cy="24" r="1.35" />
+      <circle class="system-stage__node" cx="63" cy="24" r="0.48" />
+      <text x="66" y="21.6">03_DELIVER</text>
+    </g>
+    <g class="system-stage" style="--stage-delay: 4.8s">
+      <circle class="system-stage__ring" cx="63" cy="39" r="1.35" />
+      <circle class="system-stage__node" cx="63" cy="39" r="0.48" />
+      <text x="66" y="43.2">04_EVOLVE</text>
+    </g>
+  </svg>
 </div>
-<div class="terrain-caption"><span>RIDGES / PASSES / VALLEYS</span><span>AN ALPINE EXPLORATION</span></div>
+<div class="terrain-caption"><span>DISCOVER / DESIGN / DELIVER / EVOLVE</span><span>WEBGL / STEP 0.055</span></div>
