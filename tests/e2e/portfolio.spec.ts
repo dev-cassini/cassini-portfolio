@@ -49,7 +49,21 @@ test('renders the approved contour-terrain hero without browser errors', async (
   await expect(page.locator('app-contour-terrain')).toHaveAttribute('data-terrain-status', 'ready');
   await expect(page.locator('app-contour-terrain canvas')).toBeVisible();
   await expect(page.locator('.system-stage')).toHaveCount(4);
-  await expect(page.locator('.system-route--trace')).toBeVisible();
+  await expect(page.locator('.system-stage__mast')).toHaveCount(4);
+  await expect(page.locator('.system-stage__beacon')).toHaveCount(4);
+  await expect(page.locator('.system-stage__signal')).toHaveCount(4);
+  await expect(page.locator('.system-stage__ring')).toHaveCount(0);
+  await expect(page.locator('.system-stage__node')).toHaveCount(0);
+  await expect(page.locator('.system-route')).toHaveCount(0);
+  const stageLabels = page.locator('.system-stage text');
+  await expect(stageLabels).toHaveCount(4);
+  const animationNames = await stageLabels.evaluateAll((labels) =>
+    labels.map((label) => getComputedStyle(label).animationName),
+  );
+  expect(animationNames[0]).toContain('reveal-discover-stage');
+  expect(animationNames[1]).toContain('reveal-design-stage');
+  expect(animationNames[2]).toContain('reveal-deliver-stage');
+  expect(animationNames[3]).toContain('reveal-evolve-stage');
 
   expect(errors).toEqual([]);
 });
@@ -60,7 +74,8 @@ test('keeps the static terrain visible on mobile with reduced motion and release
   await page.goto('/');
   await expect(page.locator('app-contour-terrain')).toHaveAttribute('data-terrain-status', 'ready');
   await expect(page.locator('app-contour-terrain canvas')).toBeVisible();
-  await expect(page.locator('.system-route--trace')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.system-stage__beacon').first()).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.system-stage text').first()).toHaveCSS('opacity', '0');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('link', { name: 'View summit log' }).click();
   await expect(page.locator('app-contour-terrain')).toHaveCount(0);

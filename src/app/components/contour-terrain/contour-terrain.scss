@@ -34,38 +34,56 @@ canvas.unavailable { visibility: hidden; }
   pointer-events: none;
 }
 
-.system-route {
+.system-stage__mast {
   fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.system-route--underlay {
-  stroke: var(--surface-inverse);
-  stroke-width: 1.2;
-  opacity: 0.82;
-}
-
-.system-route--trace {
   stroke: var(--text-highlight);
-  stroke-width: 0.32;
+  stroke-width: 0.28;
+  stroke-linecap: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   opacity: 0;
-  animation: trace-system-route 12s linear infinite;
+  animation-duration: 12s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-iteration-count: infinite;
 }
 
-.system-stage__ring {
-  fill: var(--surface-inverse);
-  stroke: var(--line-color);
-  stroke-width: 0.22;
-}
-
-.system-stage__node {
-  fill: var(--line-color);
+.system-stage__beacon {
+  fill: none;
+  stroke: var(--text-highlight);
+  stroke-width: 0.28;
+  opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: signal-system-node 12s ease-in-out var(--stage-delay) infinite;
+  animation: signal-system-beacon 12s cubic-bezier(0.22, 1, 0.36, 1) var(--stage-delay) infinite;
+}
+
+.system-stage__signal {
+  fill: var(--text-highlight);
+  opacity: 0;
+}
+
+.system-stage--discover .system-stage__mast { animation-name: raise-discover-beacon; }
+.system-stage--design .system-stage__mast { animation-name: raise-design-beacon; }
+.system-stage--deliver .system-stage__mast { animation-name: raise-deliver-beacon; }
+.system-stage--evolve .system-stage__mast { animation-name: raise-evolve-beacon; }
+
+.system-stage--discover .system-stage__signal,
+.system-stage--discover text { animation-name: reveal-discover-stage; }
+
+.system-stage--design .system-stage__signal,
+.system-stage--design text { animation-name: reveal-design-stage; }
+
+.system-stage--deliver .system-stage__signal,
+.system-stage--deliver text { animation-name: reveal-deliver-stage; }
+
+.system-stage--evolve .system-stage__signal,
+.system-stage--evolve text { animation-name: reveal-evolve-stage; }
+
+.system-stage__signal,
+.system-stage text {
+  animation-duration: 12s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .system-stage text {
@@ -75,28 +93,66 @@ canvas.unavailable { visibility: hidden; }
   paint-order: stroke fill;
   font: 500 1.75px var(--font-mono);
   letter-spacing: 0.08em;
-  opacity: 0.68;
-  animation: signal-system-label 12s ease-in-out var(--stage-delay) infinite;
+  opacity: 0;
 }
 
-@keyframes trace-system-route {
-  0%, 7% { stroke-dashoffset: 1; opacity: 0; }
-  10% { opacity: 1; }
-  58%, 90% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+@keyframes raise-discover-beacon {
+  0%, 2% { opacity: 0; stroke-dashoffset: 1; }
+  4% { opacity: 1; }
+  10%, 96% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
 }
 
-@keyframes signal-system-node {
-  0%, 3% { fill: var(--line-color); transform: scale(1); }
-  7% { fill: var(--text-highlight); transform: scale(1.65); }
-  13% { fill: var(--text-highlight); transform: scale(1); }
-  18%, 100% { fill: var(--line-color); transform: scale(1); }
+@keyframes raise-design-beacon {
+  0%, 27% { opacity: 0; stroke-dashoffset: 1; }
+  29% { opacity: 1; }
+  35%, 96% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
 }
 
-@keyframes signal-system-label {
-  0%, 3% { fill: var(--text-on-inverse); opacity: 0.68; }
-  7%, 13% { fill: var(--text-highlight); opacity: 1; }
-  18%, 100% { fill: var(--text-on-inverse); opacity: 0.68; }
+@keyframes raise-deliver-beacon {
+  0%, 52% { opacity: 0; stroke-dashoffset: 1; }
+  54% { opacity: 1; }
+  60%, 96% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes raise-evolve-beacon {
+  0%, 77% { opacity: 0; stroke-dashoffset: 1; }
+  79% { opacity: 1; }
+  85%, 96% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes signal-system-beacon {
+  0%, 9% { opacity: 0; transform: scale(0.65); }
+  11% { opacity: 0.9; transform: scale(0.8); }
+  20% { opacity: 0.2; transform: scale(2.1); }
+  24%, 100% { opacity: 0; transform: scale(2.7); }
+}
+
+@keyframes reveal-discover-stage {
+  0%, 11% { opacity: 0; }
+  13%, 96% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes reveal-design-stage {
+  0%, 36% { opacity: 0; }
+  38%, 96% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes reveal-deliver-stage {
+  0%, 61% { opacity: 0; }
+  63%, 96% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes reveal-evolve-stage {
+  0%, 86% { opacity: 0; }
+  88%, 96% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @media (max-width: 600px) {
@@ -105,14 +161,17 @@ canvas.unavailable { visibility: hidden; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .system-route--trace {
-    animation: none;
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-
-  .system-stage__node,
+  .system-stage__mast,
+  .system-stage__beacon,
+  .system-stage__signal,
   .system-stage text {
     animation: none;
+  }
+
+  .system-stage__mast,
+  .system-stage__beacon,
+  .system-stage__signal,
+  .system-stage text {
+    opacity: 0;
   }
 }
