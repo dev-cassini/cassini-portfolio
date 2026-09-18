@@ -1,10 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
-import { ThemeToggle } from './components/theme-toggle/theme-toggle';
-import { filter } from 'rxjs/operators';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -12,21 +9,10 @@ import { AsyncPipe } from '@angular/common';
   imports: [
     RouterOutlet,
     Header,
-    Footer,
-    ThemeToggle
+    Footer
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class AppComponent {
-  private router = inject(Router);
-  isHomePage = true;
-
-  constructor() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.isHomePage = event.url === '/' || event.url === '/#';
-    });
-  }
 }

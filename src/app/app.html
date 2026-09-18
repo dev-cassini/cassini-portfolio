@@ -1,14 +1,3 @@
-@if (!isHomePage) {
 <app-header></app-header>
-}
-@if (isHomePage) {
-<app-theme-toggle [isFixed]="true"></app-theme-toggle>
-}
-
-<main>
-  <router-outlet></router-outlet>
-</main>
-
-@if (!isHomePage) {
+<main><router-outlet></router-outlet></main>
 <app-footer></app-footer>
-}

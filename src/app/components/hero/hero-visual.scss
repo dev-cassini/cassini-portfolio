@@ -1,0 +1,6 @@
+:host { display: block; width: 100%; }
+.visual { width: 100%; }
+.visual__engraving, .visual__svg { display: block; width: 100%; height: auto; }
+.visual__caption { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem; border-top: 1px solid var(--line-subtle); color: var(--text-muted); font: .55rem var(--font-mono); letter-spacing: .12em; }
+.visual__label { position: absolute; z-index: 1; padding: 1rem; color: var(--text-on-inverse); font: .6rem var(--font-mono); letter-spacing: .1em; }
+@media (prefers-reduced-motion: reduce) { :host { display: block; } }

@@ -1,0 +1,8 @@
+<div class="terrain-heading"><span><i></i> ALPINE CONTOURS</span><span>STUDY / 06</span></div>
+<div class="terrain-frame">
+  <canvas #canvas aria-hidden="true" [class.unavailable]="status() === 'fallback'"></canvas>
+  @if (status() === 'fallback') {
+    <img class="terrain-fallback" src="visuals/contour-terrain.png" alt="" width="1200" height="880" />
+  }
+</div>
+<div class="terrain-caption"><span>RIDGES / PASSES / VALLEYS</span><span>AN ALPINE EXPLORATION</span></div>

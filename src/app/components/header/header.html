@@ -1,27 +1,15 @@
 <header class="header">
-    <div class="container header__container">
-        <a routerLink="/" class="header__logo" aria-label="Cassini home" (click)="closeMenu()">
-            <app-logo></app-logo>
-        </a>
-        <button
-            type="button"
-            class="nav-toggle"
-            [attr.aria-expanded]="isMenuOpen()"
-            aria-controls="primary-navigation"
-            aria-label="Toggle navigation menu"
-            (click)="toggleMenu()">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-        </button>
-        <nav id="primary-navigation" class="nav" aria-label="Primary navigation" [class.nav--open]="isMenuOpen()" (keydown.escape)="closeMenu()">
-            <ul class="nav__list">
-                <li class="nav__item"><a routerLink="/" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Home</a></li>
-                <li class="nav__item"><a routerLink="/about" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">About</a></li>
-                <li class="nav__item"><a routerLink="/projects" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Projects</a></li>
-                <li class="nav__item"><a routerLink="/contact" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Contact</a></li>
-            </ul>
-        </nav>
-        <app-theme-toggle [isFixed]="false"></app-theme-toggle>
-    </div>
+  <div class="container header__container">
+    <a routerLink="/" class="header__brand" aria-label="Cassini home" (click)="closeMenu()">Cassini <span>/ Field Journal</span></a>
+    <button type="button" class="nav-toggle" [attr.aria-expanded]="isMenuOpen()" aria-controls="primary-navigation" aria-label="Toggle navigation menu" (click)="toggleMenu()"><span aria-hidden="true"></span><span aria-hidden="true"></span></button>
+    <nav id="primary-navigation" class="nav" aria-label="Primary navigation" [class.nav--open]="isMenuOpen()" (keydown.escape)="closeMenu()">
+      <ul class="nav__list">
+        <li><a routerLink="/" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Home</a></li>
+        <li><a routerLink="/projects" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Projects</a></li>
+        <li><a routerLink="/about" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">About</a></li>
+        <li><a routerLink="/contact" routerLinkActive="nav__link--active" ariaCurrentWhenActive="page" class="nav__link" (click)="closeMenu()">Contact</a></li>
+      </ul>
+    </nav>
+    <app-theme-toggle [isFixed]="false"></app-theme-toggle>
+  </div>
 </header>

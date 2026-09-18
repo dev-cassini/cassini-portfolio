@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  background: var(--surface-inverse);
+  color: var(--line-color);
+}
+
+.terrain-heading, .terrain-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.6rem;
+  font: 0.58rem var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
+.terrain-heading {
+  color: var(--text-on-inverse);
+  i { display: inline-block; width: 6px; height: 6px; background: var(--text-highlight); margin-right: 0.6rem; }
+}
+
+.terrain-frame { position: relative; aspect-ratio: 15 / 11; }
+canvas, .terrain-fallback { display: block; width: 100%; height: 100%; }
+canvas.unavailable { visibility: hidden; }
+.terrain-fallback { position: absolute; inset: 0; object-fit: contain; }
+.terrain-caption { border-top: 1px solid var(--line-color); }
+
+@media (max-width: 600px) {
+  .terrain-heading, .terrain-caption { font-size: 0.45rem; padding: 1rem 0.8rem; gap: 0.5rem; }
+}

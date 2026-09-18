@@ -1,99 +1,11 @@
-.projects {
-    padding-top: 100px;
-
-    &__grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2.5rem;
-        margin-top: 3rem;
-    }
-}
-
-.project-card {
-    background: var(--surface-color);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-
-    &:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-
-        .placeholder-img {
-            transform: scale(1.05);
-        }
-    }
-
-    &__image {
-        height: 200px;
-        overflow: hidden;
-        background: #000;
-    }
-
-    &__content {
-        padding: 1.5rem;
-    }
-}
-
-.placeholder-img {
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s ease;
-
-    &.project-1 {
-        background: linear-gradient(45deg, #1f4037, #99f2c8);
-    }
-
-    &.project-2 {
-        background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
-    }
-
-    &.project-3 {
-        background: linear-gradient(45deg, #2193b0, #6dd5ed);
-    }
-}
-
-.project-title {
-    font-size: 1.4rem;
-    color: var(--text-gradient-start);
-    margin-bottom: 0.8rem;
-}
-
-.project-desc {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-}
-
-.project-tech {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    list-style: none;
-    margin-bottom: 1.5rem;
-
-    li {
-        font-size: 0.8rem;
-        font-family: var(--font-mono);
-        color: var(--text-highlight);
-    }
-}
-
-.project-links {
-    display: flex;
-    gap: 1.5rem;
-
-    .link-icon {
-        font-size: 0.9rem;
-        color: var(--text-gradient-start);
-        text-decoration: underline;
-        text-decoration-color: var(--text-highlight);
-        text-underline-offset: 4px;
-
-        &:hover {
-            color: var(--text-highlight);
-        }
-    }
-}
+.projects { min-height: calc(100dvh - 4.5rem); padding: clamp(4rem, 8vw, 7.5rem) 0; }
+.projects h1 { margin: .7rem 0 .8rem; font-size: clamp(2.35rem, 4vw, 4rem); font-weight: 600; letter-spacing: -.06em; line-height: 1.04; }
+.projects__intro { max-width: 37rem; color: var(--text-muted); font-size: .9rem; line-height: 1.65; }
+.projects__rule { height: 1px; margin: 2.4rem 0 1.8rem; background: var(--line-subtle); }
+.projects__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.route-card { min-height: 10.5rem; padding: 1.15rem; background: var(--surface-color); border-radius: .5rem; }
+.route-card__index, .projects__note { color: var(--text-highlight); font-family: var(--font-mono); font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; }
+.route-card h2 { margin: .75rem 0 .55rem; font-size: 1.15rem; font-weight: 600; letter-spacing: -.035em; }
+.route-card p:not(.route-card__index) { color: var(--text-muted); font-size: .72rem; line-height: 1.55; }
+.projects__note { margin-top: 1.1rem; color: var(--text-muted); }
+@media (max-width: 720px) { .projects__grid { grid-template-columns: 1fr; } .route-card { min-height: auto; } }
