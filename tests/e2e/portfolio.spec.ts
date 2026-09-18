@@ -4,6 +4,8 @@ test('renders the portfolio landing page and toggles the theme', async ({ page }
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Thoughtful software, built to climb.' })).toBeVisible();
+  await expect(page.locator('app-header app-logo svg')).toBeVisible();
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /favicon\.svg\?v=1$/);
   await page.getByRole('button', { name: 'Toggle theme' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });

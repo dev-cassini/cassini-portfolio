@@ -1,6 +1,6 @@
 <header class="header">
   <div class="container header__container">
-    <a routerLink="/" class="header__brand" aria-label="Cassini home" (click)="closeMenu()">Cassini <span>/ Field Journal</span></a>
+    <a routerLink="/" class="header__brand" aria-label="Cassini home" (click)="closeMenu()"><app-logo></app-logo><span class="header__brand-name">Cassini <span>/ Field Journal</span></span></a>
     <button type="button" class="nav-toggle" [attr.aria-expanded]="isMenuOpen()" aria-controls="primary-navigation" aria-label="Toggle navigation menu" (click)="toggleMenu()"><span aria-hidden="true"></span><span aria-hidden="true"></span></button>
     <nav id="primary-navigation" class="nav" aria-label="Primary navigation" [class.nav--open]="isMenuOpen()" (keydown.escape)="closeMenu()">
       <ul class="nav__list">
